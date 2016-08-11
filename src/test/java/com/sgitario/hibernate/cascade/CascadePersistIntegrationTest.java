@@ -25,27 +25,21 @@ public class CascadePersistIntegrationTest extends IntegrationTestBase<UserWithP
 	}
 
 	/**
-	 * Cascade: None Output: 4 queries
+	 * @formatter:off
+	 * PRO: One save action per parent entity for new entities (User)
+	 * CONS: Still child entity needs to be updated separately.
+	 * @formatter:on
 	 */
 	@Test
-	public void scenarioTest() {
+	public void scenario() {
 		UserWithPersistCascade user = new UserWithPersistCascade("Dave", "Matthews");
-		Role role = new Role("Manager");
-		user.setRole(role);
-		user = saveUser(user);
+		user.setRole(new Role("Manager"));
+		user = saveUser(user); // 1 save action: 2 inserts
 
 		user.setFirstname("New Name 1");
-		role.setRoleName("Employer 1");
-		user = saveUser(user);
-		role = saveRole(role);
-
-		user.setFirstname("New Name 2");
-		role.setRoleName("Employer 2");
-		user = saveUser(user);
-		role = saveRole(role);
-
-		deleteUser(user);
-		deleteRole(role);
+		user = saveUser(user); // 1 save action: 2 queries, 1 update
+		user.getRole().setRoleName("Employer 1");
+		saveRole(user.getRole()); // 1 save action: 1 query, 1 update
 	}
 	/*
 @formatter:off
@@ -61,20 +55,6 @@ Hibernate: update UserWithPersistCascade set C_FIRSTNAME=?, C_LASTNAME=?, role=?
 *****: Saving Role
 Hibernate: select role0_.id as id1_0_0_, role0_.C_ROLE_NAME as C_ROLE_N2_0_0_ from Role role0_ where role0_.id=?
 Hibernate: update Role set C_ROLE_NAME=? where id=?
-*****: Saving User
-Hibernate: select userwithpe0_.id as id1_4_0_, userwithpe0_.C_FIRSTNAME as C_FIRSTN2_4_0_, userwithpe0_.C_LASTNAME as C_LASTNA3_4_0_, userwithpe0_.role as role4_4_0_ from UserWithPersistCascade userwithpe0_ where userwithpe0_.id=?
-Hibernate: select role0_.id as id1_0_0_, role0_.C_ROLE_NAME as C_ROLE_N2_0_0_ from Role role0_ where role0_.id=?
-Hibernate: update UserWithPersistCascade set C_FIRSTNAME=?, C_LASTNAME=?, role=? where id=?
-*****: Saving Role
-Hibernate: select role0_.id as id1_0_0_, role0_.C_ROLE_NAME as C_ROLE_N2_0_0_ from Role role0_ where role0_.id=?
-Hibernate: update Role set C_ROLE_NAME=? where id=?
-*****: Removing User
-Hibernate: select userwithpe0_.id as id1_4_0_, userwithpe0_.C_FIRSTNAME as C_FIRSTN2_4_0_, userwithpe0_.C_LASTNAME as C_LASTNA3_4_0_, userwithpe0_.role as role4_4_0_ from UserWithPersistCascade userwithpe0_ where userwithpe0_.id=?
-Hibernate: select role0_.id as id1_0_0_, role0_.C_ROLE_NAME as C_ROLE_N2_0_0_ from Role role0_ where role0_.id=?
-Hibernate: delete from UserWithPersistCascade where id=?
-*****: Removing Role
-Hibernate: select role0_.id as id1_0_0_, role0_.C_ROLE_NAME as C_ROLE_N2_0_0_ from Role role0_ where role0_.id=?
-Hibernate: delete from Role where id=?
 @formatter:on
 	 */
 }

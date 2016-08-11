@@ -25,28 +25,20 @@ public class CascadeNoneIntegrationTest extends IntegrationTestBase<UserWithNoCa
 	}
 
 	/**
-	 * Cascade: None Output: 4 queries
+	 * @formatter:off
+	 * CONS: 1 save action per update/insert/delete
+	 * @formatter:on
 	 */
 	@Test
-	public void scenarioTest() {
+	public void scenario() {
 		UserWithNoCascade user = new UserWithNoCascade("Dave", "Matthews");
-		Role role = new Role("Manager");
-		role = saveRole(role);
-		user.setRole(role);
-		user = saveUser(user);
-
-		user.setFirstname("New Name 1");
-		role.setRoleName("Employer 1");
-		user = saveUser(user);
-		role = saveRole(role);
+		user.setRole(saveRole(new Role("Manager"))); // 1 save action: 1 insert
+		user = saveUser(user); // 1 save action: 1 insert
 
 		user.setFirstname("New Name 2");
-		role.setRoleName("Employer 2");
-		user = saveUser(user);
-		role = saveRole(role);
-
-		deleteUser(user);
-		deleteRole(role);
+		user = saveUser(user); // 1 save action: 2 queries, 1 update
+		user.getRole().setRoleName("Employer 2");
+		saveRole(user.getRole()); // 1 save action: 1 query, 1 update
 	}
 	/*
 @formatter:off
@@ -57,14 +49,7 @@ Hibernate: insert into Role (C_ROLE_NAME, id) values (?, ?)
 Hibernate: call next value for hibernate_sequence
 Hibernate: insert into UserWithNoCascade (C_FIRSTNAME, C_LASTNAME, role, id) values (?, ?, ?, ?)
 *****: Saving User
-Hibernate: select userwithno0_.id as id1_2_0_, userwithno0_.C_FIRSTNAME as C_FIRSTN2_2_0_, userwithno0_.C_LASTNAME as C_LASTNA3_2_0_, userwithno0_.role as role4_2_0_ from UserWithNoCascade userwithno0_ where userwithno0_.id=?
-Hibernate: select role0_.id as id1_0_0_, role0_.C_ROLE_NAME as C_ROLE_N2_0_0_ from Role role0_ where role0_.id=?
-Hibernate: update UserWithNoCascade set C_FIRSTNAME=?, C_LASTNAME=?, role=? where id=?
-*****: Saving Role
-Hibernate: select role0_.id as id1_0_0_, role0_.C_ROLE_NAME as C_ROLE_N2_0_0_ from Role role0_ where role0_.id=?
-Hibernate: update Role set C_ROLE_NAME=? where id=?
-*****: Saving User
-Hibernate: select userwithno0_.id as id1_2_0_, userwithno0_.C_FIRSTNAME as C_FIRSTN2_2_0_, userwithno0_.C_LASTNAME as C_LASTNA3_2_0_, userwithno0_.role as role4_2_0_ from UserWithNoCascade userwithno0_ where userwithno0_.id=?
+Hibernate: select userwithno0_.id as id1_3_0_, userwithno0_.C_FIRSTNAME as C_FIRSTN2_3_0_, userwithno0_.C_LASTNAME as C_LASTNA3_3_0_, userwithno0_.role as role4_3_0_ from UserWithNoCascade userwithno0_ where userwithno0_.id=?
 Hibernate: select role0_.id as id1_0_0_, role0_.C_ROLE_NAME as C_ROLE_N2_0_0_ from Role role0_ where role0_.id=?
 Hibernate: update UserWithNoCascade set C_FIRSTNAME=?, C_LASTNAME=?, role=? where id=?
 *****: Saving Role

@@ -35,14 +35,6 @@ public class CascadeRemoveIntegrationTest extends IntegrationTestBase<UserWithRe
 		user.setRole(role);
 		user = saveUser(user);
 
-		user.setFirstname("New Name 1");
-		role.setRoleName("Employer 1");
-		user = saveUser(user);
-
-		user.setFirstname("New Name 2");
-		role.setRoleName("Employer 2");
-		user = saveUser(user);
-
 		deleteUser(user);
 	}
 	/*

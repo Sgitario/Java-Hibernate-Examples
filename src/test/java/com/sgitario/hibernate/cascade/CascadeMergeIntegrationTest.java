@@ -25,26 +25,25 @@ public class CascadeMergeIntegrationTest extends IntegrationTestBase<UserWithMer
 	}
 
 	/**
-	 * Cascade: None Output: 4 queries
+	 * @formatter:off
+	 * PRO: One save action to update parent and child entities.
+	 * CONS: One save action for every new entity.
+	 * @formatter:on
 	 */
 	@Test
-	public void scenarioTest() {
+	public void scenario() {
 		UserWithMergeCascade user = new UserWithMergeCascade("Dave", "Matthews");
-		Role role = new Role("Manager");
-		role = saveRole(role);
+		Role role = saveRole(new Role("Manager")); // 1 save action: 1 insert
 		user.setRole(role);
-		user = saveUser(user);
+		user = saveUser(user);// 1 save action: 1 insert
 
 		user.setFirstname("New Name 1");
-		role.setRoleName("Employer 1");
-		user = saveUser(user);
+		user.getRole().setRoleName("Employer 1");
+		user = saveUser(user);// 1 save action: 1 query, 2 updates
 
 		user.setFirstname("New Name 2");
-		role.setRoleName("Employer 2");
-		user = saveUser(user);
-
-		deleteUser(user);
-		deleteRole(role);
+		user.getRole().setRoleName("Employer 2");
+		user = saveUser(user);// 1 save action: 1 query, 2 updates
 	}
 	/*
 @formatter:off
@@ -60,13 +59,8 @@ Hibernate: update Role set C_ROLE_NAME=? where id=?
 Hibernate: update UserWithMergeCascade set C_FIRSTNAME=?, C_LASTNAME=?, role=? where id=?
 *****: Saving User
 Hibernate: select userwithme0_.id as id1_2_1_, userwithme0_.C_FIRSTNAME as C_FIRSTN2_2_1_, userwithme0_.C_LASTNAME as C_LASTNA3_2_1_, userwithme0_.role as role4_2_1_, role1_.id as id1_0_0_, role1_.C_ROLE_NAME as C_ROLE_N2_0_0_ from UserWithMergeCascade userwithme0_ left outer join Role role1_ on userwithme0_.role=role1_.id where userwithme0_.id=?
+Hibernate: update Role set C_ROLE_NAME=? where id=?
 Hibernate: update UserWithMergeCascade set C_FIRSTNAME=?, C_LASTNAME=?, role=? where id=?
-*****: Removing User
-Hibernate: select userwithme0_.id as id1_2_1_, userwithme0_.C_FIRSTNAME as C_FIRSTN2_2_1_, userwithme0_.C_LASTNAME as C_LASTNA3_2_1_, userwithme0_.role as role4_2_1_, role1_.id as id1_0_0_, role1_.C_ROLE_NAME as C_ROLE_N2_0_0_ from UserWithMergeCascade userwithme0_ left outer join Role role1_ on userwithme0_.role=role1_.id where userwithme0_.id=?
-Hibernate: delete from UserWithMergeCascade where id=?
-*****: Removing Role
-Hibernate: select role0_.id as id1_0_0_, role0_.C_ROLE_NAME as C_ROLE_N2_0_0_ from Role role0_ where role0_.id=?
-Hibernate: delete from Role where id=?
 @formatter:on
 	 */
 }
